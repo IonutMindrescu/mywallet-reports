@@ -1,0 +1,8 @@
+services:
+  mywallet:
+    build: .
+    image: mywallet-reports
+    container_name: mywallet-reports
+    ports:
+      - "5660:5660"
+    restart: unless-stopped
