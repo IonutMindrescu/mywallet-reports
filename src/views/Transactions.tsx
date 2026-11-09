@@ -5,6 +5,7 @@ import { CAT, CATEGORIES } from '../lib/categories';
 import { stripDiacritics } from '../lib/parser';
 import type { CTx } from '../lib/types';
 import { type AppData, Card, CatIcon, NoData } from './shared';
+import { txMatches } from './TxModal';
 
 export function CategorySelect({ value, onChange, overridden }: { value: string; onChange: (c: string | null) => void; overridden?: boolean }) {
   const c = CAT[value];
@@ -53,13 +54,9 @@ export function Transactions({ d }: { d: AppData }) {
 
   const list = useMemo(() => {
     const nq = f.q ? stripDiacritics(f.q.toLowerCase()) : '';
+    const match = txMatches(f);
     let l = (showExcluded ? ctx.all : ctx.txs).filter(
-      (t) =>
-        (!f.cat || t.cat === f.cat) &&
-        (!f.merchant || t.mkey === f.merchant) &&
-        (!f.date || t.date === f.date) &&
-        (!f.dir || (f.dir === 'in' ? t.amount > 0 : t.amount < 0)) &&
-        (!nq || stripDiacritics([t.merchant, t.type, ...t.details, CAT[t.cat]?.name ?? ''].join(' ').toLowerCase()).includes(nq)),
+      (t) => match(t) && (!nq || stripDiacritics([t.merchant, t.type, ...t.details, CAT[t.cat]?.name ?? ''].join(' ').toLowerCase()).includes(nq)),
     );
     const dir = sort.asc ? 1 : -1;
     l = [...l].sort((a, b) => {

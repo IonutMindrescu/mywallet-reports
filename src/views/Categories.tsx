@@ -5,7 +5,7 @@ import { byCategory, byMonth, monthLabel, monthOf, type CatAgg } from '../lib/an
 import { CAT, CATEGORIES } from '../lib/categories';
 import { compact, pct } from '../lib/format';
 import { axisMoney, round } from './charts';
-import { type AppData, Card, CatIcon, NoData, Seg } from './shared';
+import { type AppData, Card, CatIcon, NoData, Seg, useViewportWidth } from './shared';
 
 type Mode = 'sunburst' | 'treemap' | 'bars';
 type Trend = 'stack' | 'percent' | 'lines';
@@ -23,6 +23,7 @@ export function Categories({ d }: { d: AppData }) {
   const months = useMemo(() => byMonth(ctx), [ctx]);
   const selected = cats.find((c) => c.cat === sel) ?? null;
 
+  const narrow = useViewportWidth() < 700;
   const main = useMemo<EChartsOption>(() => {
     const children = (c: CatAgg) => {
       const top = c.merchants.slice(0, 12);
@@ -48,8 +49,9 @@ export function Categories({ d }: { d: AppData }) {
           emphasis: { focus: 'ancestor' },
           levels: [
             {},
-            { r0: '18%', r: '58%', label: { rotate: 'tangential', fontSize: 11, color: '#fff', minAngle: 14, overflow: 'truncate', width: 80 } },
-            { r0: '59%', r: '96%', itemStyle: { opacity: 0.72 }, label: { position: 'outside', fontSize: 10, color: '#a5adcb', minAngle: 6, show: true, silent: false, overflow: 'truncate', width: 90 } },
+            { r0: '18%', r: '58%', label: { rotate: 'tangential', fontSize: narrow ? 10 : 11, color: '#fff', minAngle: narrow ? 28 : 14, overflow: 'truncate', width: narrow ? 50 : 80 } },
+            // On phones the outer ring has no room for outside labels — tooltip only.
+            { r0: '59%', r: narrow ? '92%' : '96%', itemStyle: { opacity: 0.72 }, label: narrow ? { show: false } : { position: 'outside', fontSize: 10, color: '#a5adcb', minAngle: 6, show: true, silent: false, overflow: 'truncate', width: 90 } },
           ],
           label: { color: '#fff' },
         }],
@@ -83,7 +85,7 @@ export function Categories({ d }: { d: AppData }) {
         label: { show: true, position: 'right', color: '#a5adcb', formatter: (p) => compact(Number(p.value)) },
       }],
     };
-  }, [cats, mode, fmt]);
+  }, [cats, mode, fmt, narrow]);
 
   const trendOpt = useMemo<EChartsOption>(() => {
     const ids = (selected ? [selected.cat] : cats.slice(0, 9).map((c) => c.cat));
@@ -141,7 +143,7 @@ export function Categories({ d }: { d: AppData }) {
               onClick={(p) => {
                 const id = (p.data as { id?: string })?.id;
                 if (id && CAT[id]) setSel(id === sel ? null : id);
-                else if (id?.startsWith('m:')) d.goTx({ merchant: id.slice(2) });
+                else if (id?.startsWith('m:')) d.peekTx({ merchant: id.slice(2) });
               }}
             />
           ) : (
@@ -210,7 +212,7 @@ export function Categories({ d }: { d: AppData }) {
         >
           <div className="grid g-3">
             {selected.merchants.slice(0, 9).map((m) => (
-              <div className="rank-item" key={m.key} onClick={() => d.goTx({ merchant: m.key })} style={{ background: 'rgba(14,16,40,.5)' }}>
+              <div className="rank-item" key={m.key} onClick={() => d.peekTx({ merchant: m.key })} style={{ background: 'rgba(14,16,40,.5)' }}>
                 <CatIcon cat={selected.cat} size={32} />
                 <div style={{ minWidth: 0 }}>
                   <div className="rank-name">{m.name}</div>

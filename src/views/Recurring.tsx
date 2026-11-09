@@ -32,9 +32,10 @@ export function RecurringView({ d }: { d: AppData }) {
     const arr = [...m.entries()].sort((a, b) => b[1] - a[1]);
     return {
       tooltip: { trigger: 'item', valueFormatter: (v) => fmt(Number(v)) + '/lună' },
+      legend: { type: 'scroll', bottom: 0, icon: 'circle', itemWidth: 8, itemHeight: 8, textStyle: { fontSize: 11 } },
       series: [{
-        type: 'pie', radius: ['55%', '85%'], padAngle: 2, itemStyle: { borderRadius: 8 },
-        label: { color: '#a5adcb', formatter: '{b}', fontSize: 11 },
+        type: 'pie', radius: ['50%', '78%'], center: ['50%', '44%'], padAngle: 2, itemStyle: { borderRadius: 8 },
+        label: { show: false },
         data: arr.map(([c, v]) => ({ name: CAT[c]?.name ?? c, value: round(v), itemStyle: { color: CAT[c]?.color } })),
       }],
     };
@@ -86,7 +87,7 @@ export function RecurringView({ d }: { d: AppData }) {
       <Card title="Toate plățile recurente" sub="Ordonate după costul anual · click pentru tranzacții">
         <div className="insights">
           {recurring.map((r) => (
-            <div className="sub-card" key={r.key} style={{ cursor: 'pointer' }} onClick={() => d.goTx({ merchant: r.key })}>
+            <div className="sub-card" key={r.key} style={{ cursor: 'pointer' }} onClick={() => d.peekTx({ merchant: r.key })}>
               <div className="row" style={{ alignItems: 'flex-start' }}>
                 <CatIcon cat={r.cat} size={38} />
                 <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-start' }}>

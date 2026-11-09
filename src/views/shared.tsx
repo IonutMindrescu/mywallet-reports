@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Icon } from '../components/Icon';
 import type { Ctx, Recurring } from '../lib/analytics';
 import { CAT } from '../lib/categories';
 import type { CTx } from '../lib/types';
+import type { TxModalSpec } from './TxModal';
 
 export type ViewId = 'overview' | 'categories' | 'merchants' | 'patterns' | 'recurring' | 'loans' | 'flow' | 'transactions';
 
@@ -25,7 +26,12 @@ export interface AppData {
   toggleExcluded: (cat: string) => void;
   overrides: Record<string, string>;
   setOverride: (key: string, cat: string | null) => void;
+  /** Navigate to the Transactions page with a filter. */
   goTx: (f: TxFilter) => void;
+  /** Show the transactions matching a filter in a modal (with a link to the full page). */
+  peekTx: (f: TxFilter) => void;
+  /** Show an arbitrary set of transactions in the modal. */
+  openTxModal: (spec: TxModalSpec) => void;
   txFilter: TxFilter;
   setTxFilter: (f: TxFilter) => void;
   dataFrom: string;
@@ -87,3 +93,21 @@ export function NoData({ text = 'Nu există date pentru perioada selectată.' }:
 }
 
 export const tooltipMoney = (fmt: (v: number) => string) => (v: unknown) => fmt(Number(v));
+
+/** Viewport width, updated on resize (for chart options that must adapt to small screens). */
+export function useViewportWidth(): number {
+  const [w, setW] = useState(() => (typeof window === 'undefined' ? 1440 : window.innerWidth));
+  useEffect(() => {
+    let raf = 0;
+    const on = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setW(window.innerWidth));
+    };
+    window.addEventListener('resize', on);
+    return () => {
+      window.removeEventListener('resize', on);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+  return w;
+}

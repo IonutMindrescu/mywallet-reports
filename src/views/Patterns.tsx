@@ -151,7 +151,7 @@ export function Patterns({ d }: { d: AppData }) {
   return (
     <div className="stack">
       <Card title="Calendarul cheltuielilor" sub="Fiecare pătrățel e o zi · culoarea = cât ai cheltuit. Click pe o zi pentru tranzacții">
-        <EChart option={calendar} height={calHeight} onClick={(p) => d.goTx({ date: (p.data as [string])[0], dir: 'out' })} />
+        <EChart option={calendar} height={calHeight} onClick={(p) => d.peekTx({ date: (p.data as [string])[0], dir: 'out' })} />
       </Card>
       <div className="grid g-2">
         <Card title="Ziua săptămânii" sub="Cheltuiala medie pe zi · weekend-ul e evidențiat cu roz">

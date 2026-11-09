@@ -61,18 +61,19 @@ export function KpiRow({ d }: { d: AppData }) {
 export function donutOption(c: Ctx, fmt: (v: number) => string): EChartsOption {
   const cats = byCategory(c.spend);
   const total = cats.reduce((s, x) => s + x.total, 0);
+  const totalText = fmt(total).replace(/,\d\d(?=\s)/, '');
   return {
     tooltip: { trigger: 'item', valueFormatter: (v) => fmt(Number(v)) },
     title: {
-      text: fmt(total).replace(/,\d\d(?=\s)/, ''),
+      text: totalText,
       subtext: 'cheltuieli totale',
       left: 'center', top: '40%',
-      textStyle: { fontFamily: 'Space Grotesk Variable', fontSize: 22, fontWeight: 700, color: '#e8ebff' },
+      textStyle: { fontFamily: 'Space Grotesk Variable', fontSize: totalText.length > 10 ? 17 : totalText.length > 8 ? 19 : 22, fontWeight: 700, color: '#e8ebff' },
       subtextStyle: { color: '#6b7299', fontSize: 12 },
     },
     series: [
       {
-        type: 'pie', radius: ['62%', '88%'], center: ['50%', '50%'], padAngle: 2,
+        type: 'pie', radius: ['66%', '90%'], center: ['50%', '50%'], padAngle: 2,
         itemStyle: { borderRadius: 8, borderColor: 'rgba(6,7,26,0.6)', borderWidth: 1 },
         label: { show: false },
         emphasis: { scale: true, scaleSize: 6, label: { show: false } },
@@ -166,10 +167,10 @@ export function Overview({ d }: { d: AppData }) {
           <EChart option={cash} height={300} />
         </Card>
         <Card title="Pe ce s-au dus banii" sub="Click pe o felie pentru detalii">
-          <EChart option={donut} height={230} onClick={(p) => d.goTx({ cat: (p.data as { id: string }).id, dir: 'out' })} />
+          <EChart option={donut} height={230} onClick={(p) => d.peekTx({ cat: (p.data as { id: string }).id, dir: 'out' })} />
           <div className="legend-list" style={{ marginTop: 10 }}>
             {cats.slice(0, 8).map((x) => (
-              <span key={x.cat} onClick={() => d.goTx({ cat: x.cat, dir: 'out' })}>
+              <span key={x.cat} onClick={() => d.peekTx({ cat: x.cat, dir: 'out' })}>
                 <i className="dot" style={{ background: CAT[x.cat]?.color }} />
                 {CAT[x.cat]?.name} <b className="num" style={{ color: 'var(--text)' }}>{pct(x.share)}</b>
               </span>
@@ -202,7 +203,7 @@ export function Overview({ d }: { d: AppData }) {
         <Card title="Top comercianți" sub="După suma cheltuită">
           <div className="rank">
             {merchants.map((m) => (
-              <div className="rank-item" key={m.key} onClick={() => d.goTx({ merchant: m.key })}>
+              <div className="rank-item" key={m.key} onClick={() => d.peekTx({ merchant: m.key })}>
                 <CatIcon cat={m.cat} />
                 <div style={{ minWidth: 0 }}>
                   <div className="rank-name">{m.name}</div>
@@ -222,7 +223,7 @@ export function Overview({ d }: { d: AppData }) {
         <Card title="Cele mai mari cheltuieli">
           <div className="rank">
             {biggest.map((t) => (
-              <div className="rank-item" key={t.id} onClick={() => d.goTx({ merchant: t.mkey })}>
+              <div className="rank-item" key={t.id} onClick={() => d.peekTx({ merchant: t.mkey })}>
                 <CatIcon cat={t.cat} />
                 <div style={{ minWidth: 0 }}>
                   <div className="rank-name">{t.merchant}</div>
@@ -237,7 +238,7 @@ export function Overview({ d }: { d: AppData }) {
           {upcoming.length ? (
             <div className="rank">
               {upcoming.map((r) => (
-                <div className="rank-item" key={r.key} onClick={() => d.goTx({ merchant: r.key })}>
+                <div className="rank-item" key={r.key} onClick={() => d.peekTx({ merchant: r.key })}>
                   <CatIcon cat={r.cat} />
                   <div style={{ minWidth: 0 }}>
                     <div className="rank-name">{r.name}</div>

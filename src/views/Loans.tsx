@@ -170,7 +170,7 @@ export function Loans({ d }: { d: AppData }) {
           {a.dti != null ? (
             <>
               <EChart option={gaugeOption(a.dti)} height={250} />
-              <div className="row between" style={{ marginTop: 4 }}>
+              <div className="row between" style={{ marginTop: 4, flexWrap: 'wrap', rowGap: 8 }}>
                 <div>
                   <div className="faint" style={{ fontSize: 12 }}>Rate pe lună acum</div>
                   <div className="num" style={{ fontSize: 20, fontWeight: 700 }}>{fmt(a.currentService, 0)}</div>
@@ -219,9 +219,9 @@ export function Loans({ d }: { d: AppData }) {
                         {l.name} <Pencil size={11} style={{ opacity: 0.5 }} />
                       </div>
                     )}
-                    <div className="row" style={{ gap: 6, marginTop: 4 }}>
-                      <span className="tag" style={{ color: st.color, borderColor: st.color + '55', background: st.color + '14' }}>{st.label}</span>
-                      <select className="cat-select" value={l.kind} onChange={(e) => setLoan(l.key, { kind: e.target.value as LoanKind })} style={{ color: 'var(--text-2)' }}>
+                    <div className="row" style={{ gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                      <span className="tag" style={{ color: st.color, borderColor: st.color + '55', background: st.color + '14', flexShrink: 0 }}>{st.label}</span>
+                      <select className="cat-select" value={l.kind} onChange={(e) => setLoan(l.key, { kind: e.target.value as LoanKind })} style={{ color: 'var(--text-2)', minWidth: 0, maxWidth: '100%' }}>
                         {LOAN_KINDS.map(([k, lab]) => <option key={k} value={k}>{lab}</option>)}
                       </select>
                     </div>

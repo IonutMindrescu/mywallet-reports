@@ -20,6 +20,7 @@ import { RecurringView } from './views/Recurring';
 import { Flow } from './views/Flow';
 import { Loans } from './views/Loans';
 import { Transactions } from './views/Transactions';
+import { specFromFilter, TxModal, type TxModalSpec } from './views/TxModal';
 import type { AppData, TxFilter, ViewId } from './views/shared';
 import { Logo } from './components/Logo';
 
@@ -217,9 +218,13 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const [txModal, setTxModal] = useState<TxModalSpec | null>(null);
+  const closeTxModal = useCallback(() => setTxModal(null), []);
+  const peekTx = useCallback((f: TxFilter) => setTxModal(specFromFilter(f, ctx.all)), [ctx]);
+
   const data: AppData = {
     ctx, prevCtx, all, recurring, fmt, currency: activeCurrency, excluded: excludedSet, toggleExcluded,
-    overrides, setOverride, goTx, txFilter, setTxFilter, dataFrom, dataTo, setView,
+    overrides, setOverride, goTx, peekTx, openTxModal: setTxModal, txFilter, setTxFilter, dataFrom, dataTo, setView,
   };
 
   const hasData = files.length > 0;
@@ -290,6 +295,7 @@ export function App() {
           )}
         </main>
       </div>
+      {txModal && hasData && <TxModal d={data} spec={txModal} onClose={closeTxModal} />}
       <div className="toasts" role="status">
         {toasts.map((t) => (
           <div key={t.id} className={`toast ${t.err ? 'err' : ''}`}>

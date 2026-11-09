@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { dateLabel, monthLabel, monthsInRange } from '../lib/analytics';
 import { monthEnd, monthOf, monthStart, type MonthMode, shiftKey } from '../lib/months';
 
@@ -53,6 +54,16 @@ export function PeriodBar({ period, setPeriod, dataFrom, dataTo, from, to, month
   const cur = period.kind === 'month' ? period.month ?? months[months.length - 1] : null;
   const idx = cur ? months.indexOf(cur) : -1;
   const go = (i: number) => months[i] && setPeriod({ kind: 'month', month: months[i] });
+  const stripRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // Keep the selected month chip visible inside the horizontally scrolling strip.
+    const strip = stripRef.current;
+    const chip = strip?.querySelector<HTMLElement>('.chip.on');
+    if (!strip || !chip) return;
+    const left = chip.offsetLeft - strip.offsetLeft;
+    if (left < strip.scrollLeft || left + chip.offsetWidth > strip.scrollLeft + strip.clientWidth)
+      strip.scrollTo({ left: left - (strip.clientWidth - chip.offsetWidth) / 2, behavior: 'smooth' });
+  }, [cur, monthMode]);
   const range = (m: string) => `${dateLabel(monthStart(m), false)} – ${dateLabel(monthEnd(m), false)}`;
 
   return (
@@ -108,7 +119,7 @@ export function PeriodBar({ period, setPeriod, dataFrom, dataTo, from, to, month
               <ChevronLeft size={16} />
             </button>
           )}
-          <div className="months-strip">
+          <div className="months-strip" ref={stripRef}>
             {months.map((m) => (
               <button
                 key={m}

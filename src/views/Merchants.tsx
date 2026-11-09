@@ -54,7 +54,7 @@ export function Merchants({ d }: { d: AppData }) {
   return (
     <div className="stack">
       <Card title="Harta comercianților" sub="Cât de des cumperi vs. cât de mult cheltuiești pe tranzacție · mărimea = total">
-        <EChart option={bubble} height={440} onClick={(p) => d.goTx({ merchant: (p.data as { key: string }).key })} />
+        <EChart option={bubble} height={440} onClick={(p) => d.peekTx({ merchant: (p.data as { key: string }).key })} />
       </Card>
       <Card
         title={`Toți comercianții (${merchants.length})`}
@@ -87,7 +87,7 @@ export function Merchants({ d }: { d: AppData }) {
                 <tr key={m.key}>
                   <td className="faint">{i + 1}</td>
                   <td>
-                    <div className="row" style={{ cursor: 'pointer' }} onClick={() => d.goTx({ merchant: m.key })}>
+                    <div className="row" style={{ cursor: 'pointer' }} onClick={() => d.peekTx({ merchant: m.key })}>
                       <CatIcon cat={m.cat} size={30} />
                       <span className="tx-merchant">{m.name}</span>
                     </div>

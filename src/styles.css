@@ -238,7 +238,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Lists */
 .rank { display: flex; flex-direction: column; gap: 4px; }
-.rank-item { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 8px 10px; border-radius: 12px; cursor: pointer; transition: background .15s; }
+.rank-item { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 10px; border-radius: 12px; cursor: pointer; transition: background .15s; }
 .rank-item:hover, .rank-item.on { background: rgba(139, 92, 246, 0.1); }
 .rank-ico { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; }
 .rank-name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -282,11 +282,51 @@ table.tx tr.open td { background: rgba(139, 92, 246, 0.07); }
 .mobile-only { display: none; }
 
 /* Responsive */
+/* Transactions modal */
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal-back {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px 16px;
+  background: rgba(4, 5, 18, 0.62); backdrop-filter: blur(6px); animation: fadein .2s ease-out both;
+}
+.modal {
+  --accent: var(--violet-2);
+  width: min(720px, 100%); max-height: min(86vh, 900px); display: flex; flex-direction: column; outline: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, var(--panel-solid)), var(--panel-solid) 140px);
+  border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: 0 30px 90px -20px rgba(0, 0, 0, 0.8);
+  animation: pop .25s cubic-bezier(.2, .9, .3, 1.1) both; overflow: hidden;
+}
+.modal-h { display: flex; align-items: center; gap: 12px; padding: 18px 18px 12px 20px; }
+.modal-h .icon-btn { color: var(--text-2); }
+.modal-h .icon-btn:hover { background: rgba(139, 92, 246, 0.14); color: var(--text); }
+.modal-t { font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: -0.01em; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 0 20px 14px; }
+.modal-stats > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(14, 16, 40, 0.6); border: 1px solid var(--border); font-size: 12px; min-width: 0; }
+.modal-stats b { font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal-body { overflow-y: auto; padding: 0 12px 8px; border-top: 1px solid var(--border); flex: 1; min-height: 0; }
+.modal-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); padding: 14px 10px 6px; font-weight: 600; }
+.modal-groups .rank-item { grid-template-columns: 30px minmax(0, 1fr) auto; }
+.modal-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 10px; border-bottom: 1px solid rgba(148, 163, 255, 0.06); }
+.modal-row:last-child { border-bottom: 0; }
+.modal-f { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 18px 14px 20px; border-top: 1px solid var(--border); background: rgba(8, 9, 26, 0.5); }
+@media (max-width: 560px) {
+  .modal-back { padding: 0; place-items: end stretch; }
+  .modal { width: 100%; max-height: 92vh; border-radius: var(--radius) var(--radius) 0 0; }
+  .modal-h { padding: 16px 12px 10px 16px; }
+  .modal-stats { padding: 0 16px 12px; gap: 6px; }
+  .modal-stats > div { padding: 8px 10px; }
+  .modal-stats b { font-size: 14px; white-space: normal; }
+  .modal-body { padding: 0 6px 8px; }
+  .modal-row { grid-template-columns: 64px minmax(0, 1fr) auto; gap: 8px; }
+  .modal-f { padding: 10px 16px 14px; }
+  .modal-f > .faint { display: none; }
+}
+
 @media (max-width: 1280px) {
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .features { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 1100px) {
+/* The 290px sidebar eats into the content, so one-third columns get too narrow below ~1300px. */
+@media (max-width: 1300px) {
   .g-21, .g-12, .g-3 { grid-template-columns: minmax(0, 1fr); }
   .span-2 { grid-column: auto; }
 }
@@ -317,24 +357,50 @@ table.tx tr.open td { background: rgba(139, 92, 246, 0.07); }
 .mw-swirl, .mw-bar, .mw-dot, .mw-ring, .mw-spark { transform-box: fill-box; }
 .mw-swirl { transform-origin: center; animation: mw-spin 16s linear infinite; }
 .mw-pocket { transform-box: fill-box; transform-origin: bottom; animation: mw-rise .55s cubic-bezier(.2,.9,.3,1.2) both; }
-.mw-bar { transform-origin: bottom; animation: mw-grow .6s cubic-bezier(.2,.9,.3,1.3) both; }
+/* Intro loops every --mw-cycle: bars grow, line draws, dot pops & pings, then everything retracts and replays. */
+.mw-logo { --mw-cycle: 6.5s; }
+.mw-bar { transform-origin: bottom; animation: mw-grow var(--mw-cycle) infinite both; }
 .mw-bar1 { animation-delay: .15s; }
 .mw-bar2 { animation-delay: .27s; }
 .mw-bar3 { animation-delay: .39s; }
-.mw-line { stroke-dasharray: 100; stroke-dashoffset: 100; animation: mw-draw .9s cubic-bezier(.65,0,.35,1) .55s forwards; }
-.mw-dot { transform-origin: center; transform: scale(0); animation: mw-pop .45s cubic-bezier(.3,1.6,.5,1) 1.35s forwards; }
-.mw-ring { transform-origin: center; opacity: 0; animation: mw-ping 2.4s ease-out 1.7s infinite; }
-.mw-spark { transform-origin: center; transform: scale(0); animation: mw-twinkle 3.6s ease-in-out 1.9s infinite; }
-.mw-shine { animation: mw-sweep 7s ease-in-out 1.6s infinite; }
+.mw-line { stroke-dasharray: 100; stroke-dashoffset: 100; animation: mw-draw var(--mw-cycle) infinite both; }
+.mw-dot { transform-origin: center; transform: scale(0); animation: mw-pop var(--mw-cycle) infinite both; }
+.mw-ring { transform-origin: center; opacity: 0; animation: mw-ping var(--mw-cycle) ease-out infinite both; }
+.mw-spark { transform-origin: center; transform: scale(0); animation: mw-twinkle var(--mw-cycle) ease-in-out infinite both; }
+.mw-shine { animation: mw-sweep var(--mw-cycle) ease-in-out infinite both; }
 
 @keyframes mw-spin { to { transform: rotate(360deg); } }
 @keyframes mw-rise { from { transform: translateY(14px); opacity: 0; } }
-@keyframes mw-grow { from { transform: scaleY(0); } }
-@keyframes mw-draw { to { stroke-dashoffset: 0; } }
-@keyframes mw-pop { to { transform: scale(1); } }
-@keyframes mw-ping { 0% { transform: scale(1); opacity: .9; } 70%, 100% { transform: scale(2.6); opacity: 0; } }
-@keyframes mw-twinkle { 0%, 100% { transform: scale(0) rotate(0); opacity: 0; } 18% { transform: scale(1) rotate(90deg); opacity: 1; } 36% { transform: scale(0) rotate(180deg); opacity: 0; } }
-@keyframes mw-sweep { 0% { transform: translateX(0); } 22%, 100% { transform: translateX(150px); } }
+@keyframes mw-grow {
+  0% { transform: scaleY(0); animation-timing-function: cubic-bezier(.2,.9,.3,1.3); }
+  10%, 82% { transform: scaleY(1); animation-timing-function: cubic-bezier(.6,0,.8,.4); }
+  92%, 100% { transform: scaleY(0); }
+}
+@keyframes mw-draw {
+  0%, 8% { stroke-dashoffset: 100; animation-timing-function: cubic-bezier(.65,0,.35,1); }
+  23%, 78% { stroke-dashoffset: 0; animation-timing-function: cubic-bezier(.65,0,.35,1); }
+  90%, 100% { stroke-dashoffset: -100; }
+}
+@keyframes mw-pop {
+  0%, 21% { transform: scale(0); animation-timing-function: ease-out; }
+  25% { transform: scale(1.3); }
+  28%, 78% { transform: scale(1); animation-timing-function: ease-in; }
+  84%, 100% { transform: scale(0); }
+}
+@keyframes mw-ping {
+  0%, 27% { transform: scale(1); opacity: 0; }
+  28% { transform: scale(1); opacity: .9; }
+  44% { transform: scale(2.6); opacity: 0; }
+  45% { transform: scale(1); opacity: 0; }
+  46% { transform: scale(1); opacity: .9; }
+  62%, 100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes mw-twinkle {
+  0%, 30% { transform: scale(0) rotate(0); opacity: 0; }
+  37% { transform: scale(1) rotate(90deg); opacity: 1; }
+  45%, 100% { transform: scale(0) rotate(180deg); opacity: 0; }
+}
+@keyframes mw-sweep { 0%, 24% { transform: translateX(0); } 40%, 100% { transform: translateX(150px); } }
 @keyframes mw-breathe { 50% { filter: drop-shadow(0 10px 30px rgba(34, 211, 238, 0.55)); } }
 
 .hero-logo { display: flex; justify-content: center; margin-bottom: 18px; }
